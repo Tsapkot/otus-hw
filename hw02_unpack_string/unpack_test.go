@@ -43,3 +43,24 @@ func TestUnpackInvalidString(t *testing.T) {
 		})
 	}
 }
+
+func TestUnpackWithSymbols(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{input: "\nffdg", expected: "\nffdg"},
+		{input: "f\t4n", expected: "f\t\t\t\tn"},
+		{input: "%2vvvv", expected: "%%vvvv"},
+		{input: "Бежала собака а4!", expected: "Бежала собака аааа!"},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.input, func(t *testing.T) {
+			result, err := Unpack(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.expected, result)
+		})
+	}
+}
