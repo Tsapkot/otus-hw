@@ -12,20 +12,19 @@ var ErrInvalidString = errors.New("invalid string")
 func Unpack(input string) (string, error) {
 	// Place your code here.
 	var builder strings.Builder
-	var err error
-	var runes = []rune(input)
+	runes := []rune(input)
 
 	var previous rune
 	for i := 0; i < len(runes); i++ {
-		var current = runes[i]
-		var intVal, _ = strconv.Atoi(string(current))
+		current := runes[i]
+		intVal, _ := strconv.Atoi(string(current))
+
+		if unicode.IsDigit(current) && (i == 0 || unicode.IsDigit(previous)) {
+			return "", ErrInvalidString
+		}
 
 		if unicode.IsDigit(current) {
-			if i == 0 || unicode.IsDigit(previous) {
-				err = ErrInvalidString
-			} else {
-				builder.WriteString(strings.Repeat(string(previous), intVal))
-			}
+			builder.WriteString(strings.Repeat(string(previous), intVal))
 		} else if !unicode.IsDigit(current) && i != 0 {
 			if !unicode.IsDigit(previous) {
 				builder.WriteString(string(previous))
@@ -36,5 +35,5 @@ func Unpack(input string) (string, error) {
 		}
 		previous = current
 	}
-	return builder.String(), err
+	return builder.String(), nil
 }
