@@ -14,12 +14,10 @@ func Top10(s string) []string {
 	// Place your code here.
 	countMap := make(map[string]int)
 
-	freqSlice := make([]Freq, 0)
-
 	for _, s := range strings.Fields(s) {
-		value := countMap[s]
-		countMap[s] = value + 1
+		countMap[s]++
 	}
+	freqSlice := make([]Freq, 0, len(countMap))
 	for key, value := range countMap {
 		freqSlice = append(freqSlice, Freq{key, value})
 	}
