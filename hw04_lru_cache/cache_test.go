@@ -50,7 +50,33 @@ func TestCache(t *testing.T) {
 	})
 
 	t.Run("purge logic", func(t *testing.T) {
-		// Write me
+		// выталкивание сверхлимитных
+		c := NewCache(3)
+		c.Set("a1", 1)
+		c.Set("a2", 2)
+		c.Set("a3", 3)
+		c.Set("a4", 4)
+		_, a1found := c.Get("a1")
+		require.False(t, a1found)
+
+		// выталкивание старых
+		c.Get("a3")
+		c.Get("a4")
+		c.Set("a5", 5)
+		_, a2found := c.Get("a2")
+		require.False(t, a2found)
+		_, a3found := c.Get("a3")
+		require.True(t, a3found)
+	})
+
+	t.Run("clear logic", func(t *testing.T) {
+		c := NewCache(3)
+		c.Set("ffg", 1)
+		c.Set("tttt", 2)
+		c.Set("frt4545", 3)
+		c.Clear()
+		_, found := c.Get("ffg")
+		require.False(t, found)
 	})
 }
 
