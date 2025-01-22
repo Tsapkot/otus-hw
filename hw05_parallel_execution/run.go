@@ -36,7 +36,7 @@ func Run(tasks []Task, n, m int) error {
 	}
 
 	for _, task := range tasks {
-		if errorCounter >= int64(m) {
+		if atomic.LoadInt64(&errorCounter) >= int64(m) {
 			break
 		}
 		channel <- task
@@ -45,7 +45,7 @@ func Run(tasks []Task, n, m int) error {
 
 	wg.Wait()
 
-	if errorCounter >= int64(m) {
+	if atomic.LoadInt64(&errorCounter) >= int64(m) {
 		return ErrErrorsLimitExceeded
 	}
 	return nil
