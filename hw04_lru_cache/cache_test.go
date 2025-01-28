@@ -49,6 +49,17 @@ func TestCache(t *testing.T) {
 		require.Nil(t, val)
 	})
 
+	t.Run("zero capacity cache", func(t *testing.T) {
+		c := NewCache(0)
+
+		wasInCache := c.Set("aaa", 100)
+		require.False(t, wasInCache)
+
+		val, ok := c.Get("aaa")
+		require.False(t, ok)
+		require.Nil(t, val)
+	})
+
 	t.Run("purge logic", func(t *testing.T) {
 		// выталкивание сверхлимитных
 		c := NewCache(3)

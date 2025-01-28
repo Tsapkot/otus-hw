@@ -20,6 +20,9 @@ type lruCacheItem struct {
 }
 
 func (l *lruCache) Set(key Key, value interface{}) bool {
+	if l.capacity == 0 {
+		return false
+	}
 	item, ok := l.items[key]
 	if ok {
 		item.Value.(*lruCacheItem).value = value
@@ -49,7 +52,7 @@ func (l *lruCache) Get(key Key) (interface{}, bool) {
 
 func (l *lruCache) Clear() {
 	l.queue = NewList()
-	l.items = make(map[Key]*ListItem)
+	l.items = make(map[Key]*ListItem, l.capacity)
 }
 
 func NewCache(capacity int) Cache {
