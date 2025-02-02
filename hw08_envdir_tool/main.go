@@ -13,7 +13,7 @@ func main() {
 
 	env, err := ReadDir(os.Args[1])
 	if err != nil {
-		fmt.Errorf("Error reading environment directory %s: %w", os.Args[1], err)
+		fmt.Printf("Error reading environment directory %s: %v", os.Args[1], err)
 		os.Exit(1)
 	}
 

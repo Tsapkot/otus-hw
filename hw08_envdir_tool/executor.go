@@ -22,12 +22,20 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 		}
 	}
 
-	command := exec.Command(cmd[0], cmd[1:]...)
+	if len(cmd) == 0 {
+		return 1
+	}
+	executable, err := exec.LookPath(cmd[0])
+	if err != nil {
+		return 1
+	}
+
+	command := exec.Command(executable, cmd[1:]...)
 	command.Stdin = os.Stdin
 	command.Stdout = os.Stdout
 	command.Stderr = os.Stderr
 
-	err := command.Run()
+	err = command.Run()
 	if err != nil {
 		return 1
 	}
