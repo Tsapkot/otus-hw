@@ -69,3 +69,9 @@ func TestCopy6000_1000(t *testing.T) {
 	require.Equal(t, expected, fact)
 	require.Nil(t, err)
 }
+
+func TestCopyOverlap(t *testing.T) {
+	defer cleanup()
+	err := Copy("testdata/input.txt", "testdata/input.txt", 0, 0)
+	require.ErrorIs(t, err, ErrFileOverlap)
+}
