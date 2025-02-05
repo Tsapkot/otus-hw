@@ -37,7 +37,7 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 
 	err = command.Run()
 	if err != nil {
-		return 1
+		return command.ProcessState.ExitCode()
 	}
 	return 0
 }
