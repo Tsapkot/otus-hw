@@ -12,15 +12,21 @@ import (
 var (
 	ErrUnsupportedFile       = errors.New("unsupported file")
 	ErrOffsetExceedsFileSize = errors.New("offset exceeds file size")
-	ErrFileInfo              = errors.New("failed to get source file info")
+	ErrFileInfo              = errors.New("failed to get file info")
 	ErrLimit                 = errors.New("limit might not be lower then 0")
 	ErrFileOverlap           = errors.New("source and destination files might not be the same")
 )
 
 func Copy(fromPath, toPath string, offset, limit int64) error {
-	if fromPath == toPath {
+	srcFile, err := os.Stat(fromPath)
+	if err != nil {
+		return ErrFileInfo
+	}
+	dstFile, err := os.Stat(toPath)
+	if os.SameFile(srcFile, dstFile) {
 		return ErrFileOverlap
 	}
+
 	fromFile, err := os.OpenFile(fromPath, os.O_RDONLY, 0)
 	if err != nil {
 		return fmt.Errorf("source file error: %w", err)

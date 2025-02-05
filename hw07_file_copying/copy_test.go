@@ -72,6 +72,6 @@ func TestCopy6000_1000(t *testing.T) {
 
 func TestCopyOverlap(t *testing.T) {
 	defer cleanup()
-	err := Copy("testdata/input.txt", "testdata/input.txt", 0, 0)
+	err := Copy("testdata/input.txt", "./testdata/input.txt", 0, 0)
 	require.ErrorIs(t, err, ErrFileOverlap)
 }
