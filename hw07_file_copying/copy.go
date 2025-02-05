@@ -22,7 +22,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	if err != nil {
 		return ErrFileInfo
 	}
-	dstFile, err := os.Stat(toPath)
+	dstFile, _ := os.Stat(toPath)
 	if os.SameFile(srcFile, dstFile) {
 		return ErrFileOverlap
 	}
