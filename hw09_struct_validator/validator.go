@@ -14,19 +14,27 @@ type ValidationError struct {
 	Err   error
 }
 
+type CommonError struct {
+	Message string
+}
+
+func (e CommonError) Error() string {
+	return e.Message
+}
+
 type ValidationErrors []ValidationError
 
 var (
-	ErrInput             = errors.New("input must be a struct")
 	ErrInvalidRuleFormat = func(rule string) error {
-		return fmt.Errorf("invalid rule format: %s", rule)
+		return CommonError{fmt.Sprintf("invalid rule format: %s", rule)}
 	}
 	ErrUnsupportedType = func(field reflect.Value) error {
-		return fmt.Errorf("unsupported type: %v", field.Kind())
+		return CommonError{fmt.Sprintf("unsupported type: %v", field.Kind())}
 	}
 	ErrUnsupportedValidator = func(validatorType string) error {
-		return fmt.Errorf("unsupported validator: %s", validatorType)
+		return CommonError{fmt.Sprintf("unsupported validator: %s", validatorType)}
 	}
+	ErrInput           = errors.New("input must be a struct")
 	ErrValueOutOfRange = func(def string, val int) error {
 		return fmt.Errorf("value must be %s than or equal to %d", def, val)
 	}
@@ -73,6 +81,10 @@ func Validate(v interface{}) error {
 
 		for _, rule := range rules {
 			err := defineValidation(rule, field)
+			var commonErr CommonError
+			if errors.As(err, &commonErr) {
+				return commonErr
+			}
 			if err != nil {
 				validationErrors = append(validationErrors, ValidationError{Field: structField.Name, Err: err})
 			}

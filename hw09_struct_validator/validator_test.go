@@ -2,6 +2,7 @@ package hw09structvalidator
 
 import (
 	"encoding/json"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -34,6 +35,18 @@ type (
 	Response struct {
 		Code int    `validate:"in:200,404,500"`
 		Body string `json:"omitempty"`
+	}
+
+	Marker struct {
+		Mark bool `validate:"is:true"`
+	}
+
+	Test struct {
+		Test string `validate:"ssadaafssafasf"`
+	}
+
+	MarketingMessage struct {
+		Message string `validate:"isFullOfMoney:true"`
 	}
 )
 
@@ -168,6 +181,48 @@ func TestValidateResponseErrors(t *testing.T) {
 				Err:   ErrValueOutOfValues("200,404,500"),
 			},
 		}
+		err := Validate(input)
+		if err == nil {
+			t.Errorf("validation failed, no errors: %v", err)
+		}
+		require.Equal(t, errs, err)
+	})
+}
+
+func TestValidateInvalidRuleError(t *testing.T) {
+	t.Run("testValidateInvalidRuleError", func(t *testing.T) {
+		input := Test{
+			Test: "test",
+		}
+		errs := ErrInvalidRuleFormat("ssadaafssafasf")
+		err := Validate(input)
+		if err == nil {
+			t.Errorf("validation failed, no errors: %v", err)
+		}
+		require.Equal(t, errs, err)
+	})
+}
+
+func TestValidateUnsupportedTypeError(t *testing.T) {
+	t.Run("testValidateUnsupportedTypeError", func(t *testing.T) {
+		input := Marker{
+			Mark: true,
+		}
+		errs := ErrUnsupportedType(reflect.ValueOf(true))
+		err := Validate(input)
+		if err == nil {
+			t.Errorf("validation failed, no errors: %v", err)
+		}
+		require.Equal(t, errs, err)
+	})
+}
+
+func TestValidateUnsupportedValidatorError(t *testing.T) {
+	t.Run("testValidateUnsupportedValidatorError", func(t *testing.T) {
+		input := MarketingMessage{
+			Message: "ok",
+		}
+		errs := ErrUnsupportedValidator("isFullOfMoney")
 		err := Validate(input)
 		if err == nil {
 			t.Errorf("validation failed, no errors: %v", err)
