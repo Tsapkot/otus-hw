@@ -48,6 +48,10 @@ type (
 	MarketingMessage struct {
 		Message string `validate:"isFullOfMoney:true"`
 	}
+
+	UnknownMessage struct {
+		Text string `validate:"regexp:]["`
+	}
 )
 
 func TestValidateUser(t *testing.T) {
@@ -223,6 +227,20 @@ func TestValidateUnsupportedValidatorError(t *testing.T) {
 			Message: "ok",
 		}
 		errs := ErrUnsupportedValidator("isFullOfMoney")
+		err := Validate(input)
+		if err == nil {
+			t.Errorf("validation failed, no errors: %v", err)
+		}
+		require.Equal(t, errs, err)
+	})
+}
+
+func TestValidateUnknownRegexpError(t *testing.T) {
+	t.Run("testValidateUnknownRegexpError", func(t *testing.T) {
+		input := UnknownMessage{
+			Text: "ok",
+		}
+		errs := ErrParsing("pattern", "][")
 		err := Validate(input)
 		if err == nil {
 			t.Errorf("validation failed, no errors: %v", err)

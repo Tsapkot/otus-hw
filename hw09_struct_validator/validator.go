@@ -25,6 +25,9 @@ func (e CommonError) Error() string {
 type ValidationErrors []ValidationError
 
 var (
+	ErrParsing = func(def string, rule string) error {
+		return CommonError{fmt.Sprintf("cant parse %s: %s", def, rule)}
+	}
 	ErrInvalidRuleFormat = func(rule string) error {
 		return CommonError{fmt.Sprintf("invalid rule format: %s", rule)}
 	}
@@ -139,13 +142,19 @@ func validateString(value string, validatorType, validatorValue string) error {
 	switch validatorType {
 	case "len":
 		expectedLen, err := strconv.Atoi(validatorValue)
-		if err != nil || len(value) != expectedLen {
+		if err != nil {
+			return ErrParsing("length", validatorValue)
+		}
+		if len(value) != expectedLen {
 			return ErrStringLengthMismatch(expectedLen)
 		}
 	case "regexp":
 		pattern := strings.ReplaceAll(validatorValue, "\\d", `\d`)
 		re, err := regexp.Compile(pattern)
-		if err != nil || !re.MatchString(value) {
+		if err != nil {
+			return ErrParsing("pattern", validatorValue)
+		}
+		if !re.MatchString(value) {
 			return ErrStringDoesNotMatchPattern(pattern)
 		}
 	case "in":
@@ -170,12 +179,18 @@ func validateInt(value int, validatorType, validatorValue string) error {
 	switch validatorType {
 	case "min":
 		minVal, err := strconv.Atoi(validatorValue)
-		if err != nil || value < minVal {
+		if err != nil {
+			return ErrParsing("min value", validatorValue)
+		}
+		if value < minVal {
 			return ErrValueOutOfRange("greater", minVal)
 		}
 	case "max":
 		maxVal, err := strconv.Atoi(validatorValue)
-		if err != nil || value > maxVal {
+		if err != nil {
+			return ErrParsing("max value", validatorValue)
+		}
+		if value > maxVal {
 			return ErrValueOutOfRange("less", maxVal)
 		}
 	case "in":
@@ -183,7 +198,10 @@ func validateInt(value int, validatorType, validatorValue string) error {
 		found := false
 		for _, v := range inSet {
 			num, err := strconv.Atoi(v)
-			if err == nil && value == num {
+			if err != nil {
+				return ErrParsing("value", validatorValue)
+			}
+			if value == num {
 				found = true
 				break
 			}
