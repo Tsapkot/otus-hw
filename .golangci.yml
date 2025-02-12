@@ -28,9 +28,6 @@ issues:
         - dupl
         - gocyclo
         - gosec
-  exclude-dirs:
-    - /opt/hostedtoolcache/go/
-
 
 linters:
   disable-all: true
