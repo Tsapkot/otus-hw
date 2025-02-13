@@ -66,16 +66,16 @@ func TestGetDomainStat_Time_And_Memory(t *testing.T) {
 
 	result := testing.Benchmark(bench)
 	mem := result.MemBytes
-	resultString := fmt.Sprintf(
-		"Time used: %s / %s\nMemory used: %dMb / %dMb\n",
-		result.T, timeLimit,
-		mem/mb, memoryLimit/mb,
-	)
-	filePath, err := saveTestResults("testresults", resultString)
-	if err != nil {
-		t.Fatalf("Failed to save test results: %v", err)
-	}
-	t.Logf("Test results saved to: %s", filePath)
+	//resultString := fmt.Sprintf(
+	//	"Time used: %s / %s\nMemory used: %dMb / %dMb\n",
+	//	result.T, timeLimit,
+	//	mem/mb, memoryLimit/mb,
+	//)
+	//filePath, err := saveTestResults("testresults", resultString)
+	//if err != nil {
+	//	t.Fatalf("Failed to save test results: %v", err)
+	//}
+	//t.Logf("Test results saved to: %s", filePath)
 
 	t.Logf("time used: %s / %s", result.T, timeLimit)
 	t.Logf("memory used: %dMb / %dMb", mem/mb, memoryLimit/mb)
