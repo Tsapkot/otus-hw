@@ -20,7 +20,7 @@ func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
 		line := scanner.Bytes()
 
 		var user struct {
-			Email string `json:"Email"`
+			Email string `json:"email"`
 		}
 		if err := json.Unmarshal(line, &user); err != nil || user.Email == "" {
 			continue

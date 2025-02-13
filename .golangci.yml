@@ -14,6 +14,8 @@ linters-settings:
         allow:
           - $gostd
           - github.com/stretchr
+          - github.com/json-iterator/go
+
 issues:
   exclude-rules:
     - path: _test\.go

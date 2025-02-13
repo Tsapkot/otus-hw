@@ -1,10 +1,10 @@
-//go:build bench
-// +build bench
-
 package hw10programoptimization
 
 import (
 	"archive/zip"
+	"fmt"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -17,6 +17,29 @@ const (
 
 	timeLimit = 300 * time.Millisecond
 )
+
+func saveTestResults(dir string, content string) (string, error) {
+	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+		return "", fmt.Errorf("failed to create directory: %w", err)
+	}
+
+	timestamp := time.Now().Format("2006-01-01_15-04-05")
+	filename := fmt.Sprintf("%s_test_results.txt", timestamp)
+	filePath := filepath.Join(dir, filename)
+
+	file, err := os.Create(filePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to create file: %w", err)
+	}
+	defer file.Close()
+
+	_, err = file.WriteString(content)
+	if err != nil {
+		return "", fmt.Errorf("failed to write to file: %w", err)
+	}
+
+	return filePath, nil
+}
 
 // go test -v -count=1 -timeout=30s -tags bench .
 func TestGetDomainStat_Time_And_Memory(t *testing.T) {
@@ -43,6 +66,17 @@ func TestGetDomainStat_Time_And_Memory(t *testing.T) {
 
 	result := testing.Benchmark(bench)
 	mem := result.MemBytes
+	resultString := fmt.Sprintf(
+		"Time used: %s / %s\nMemory used: %dMb / %dMb\n",
+		result.T, timeLimit,
+		mem/mb, memoryLimit/mb,
+	)
+	filePath, err := saveTestResults("testresults", resultString)
+	if err != nil {
+		t.Fatalf("Failed to save test results: %v", err)
+	}
+	t.Logf("Test results saved to: %s", filePath)
+
 	t.Logf("time used: %s / %s", result.T, timeLimit)
 	t.Logf("memory used: %dMb / %dMb", mem/mb, memoryLimit/mb)
 
