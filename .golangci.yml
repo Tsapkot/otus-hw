@@ -14,6 +14,9 @@ linters-settings:
         allow:
           - $gostd
           - github.com/stretchr
+          - github.com/cheggaaa/pb/v3
+  exhaustive:
+    default-signifies-exhaustive: true
 issues:
   exclude-rules:
     - path: _test\.go

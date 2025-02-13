@@ -2,8 +2,10 @@ package hw09structvalidator
 
 import (
 	"encoding/json"
-	"fmt"
+	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 type UserRole string
@@ -34,27 +36,215 @@ type (
 		Code int    `validate:"in:200,404,500"`
 		Body string `json:"omitempty"`
 	}
+
+	Marker struct {
+		Mark bool `validate:"is:true"`
+	}
+
+	Test struct {
+		Test string `validate:"ssadaafssafasf"`
+	}
+
+	MarketingMessage struct {
+		Message string `validate:"isFullOfMoney:true"`
+	}
+
+	UnknownMessage struct {
+		Text string `validate:"regexp:]["`
+	}
 )
 
-func TestValidate(t *testing.T) {
-	tests := []struct {
-		in          interface{}
-		expectedErr error
-	}{
-		{
-			// Place your code here.
-		},
-		// ...
-		// Place your code here.
-	}
+func TestValidateUser(t *testing.T) {
+	t.Run("testValidUser", func(t *testing.T) {
+		input := User{
+			ID:     "012345678901234567890123456789012345",
+			Name:   "name01234567890123456789",
+			Age:    33,
+			Email:  "test@mail.ru",
+			Role:   "stuff",
+			Phones: []string{"12334567891"},
+		}
+		err := Validate(input)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		require.Nil(t, err)
+	})
+}
 
-	for i, tt := range tests {
-		t.Run(fmt.Sprintf("case %d", i), func(t *testing.T) {
-			tt := tt
-			t.Parallel()
+func TestValidateUserErrors(t *testing.T) {
+	t.Run("testValidUserErrors", func(t *testing.T) {
+		in := User{
+			ID:     "0",
+			Name:   "0",
+			Age:    0,
+			Email:  "0",
+			Role:   "0",
+			Phones: []string{"0"},
+		}
+		errs := ValidationErrors{
+			ValidationError{
+				Field: "ID",
+				Err:   ErrStringLengthMismatch(36),
+			},
+			ValidationError{
+				Field: "Age",
+				Err:   ErrValueOutOfRange("greater", 18),
+			},
+			ValidationError{
+				Field: "Email",
+				Err:   ErrStringDoesNotMatchPattern("^\\w+@\\w+\\.\\w+$"),
+			},
+			ValidationError{
+				Field: "Role",
+				Err:   ErrValueOutOfValues("admin,stuff"),
+			},
+			ValidationError{
+				Field: "Phones",
+				Err:   ErrStringLengthMismatch(11),
+			},
+		}
+		err := Validate(in)
+		if err == nil {
+			t.Errorf("validation failed, no errors: %v", err)
+		}
+		require.Equal(t, errs, err)
+	})
+}
 
-			// Place your code here.
-			_ = tt
-		})
-	}
+func TestValidateApp(t *testing.T) {
+	t.Run("testValidApp", func(t *testing.T) {
+		input := App{
+			Version: "0.1.5",
+		}
+		err := Validate(input)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		require.Nil(t, err)
+	})
+}
+
+func TestValidateAppErrors(t *testing.T) {
+	t.Run("testValidAppErrors", func(t *testing.T) {
+		input := App{
+			Version: "0",
+		}
+		errs := ValidationErrors{
+			ValidationError{
+				Field: "Version",
+				Err:   ErrStringLengthMismatch(5),
+			},
+		}
+		err := Validate(input)
+		if err == nil {
+			t.Errorf("validation failed, no errors: %v", err)
+		}
+		require.Equal(t, errs, err)
+	})
+}
+
+func TestValidateToken(t *testing.T) {
+	t.Run("testValidToken", func(t *testing.T) {
+		input := Token{
+			Header:    []byte("dsfdsfds"),
+			Payload:   []byte(""),
+			Signature: nil,
+		}
+		err := Validate(input)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		require.Nil(t, err)
+	})
+}
+
+func TestValidateResponse(t *testing.T) {
+	t.Run("testValidResponse", func(t *testing.T) {
+		input := Response{
+			Code: 200,
+			Body: "",
+		}
+		err := Validate(input)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		require.Nil(t, err)
+	})
+}
+
+func TestValidateResponseErrors(t *testing.T) {
+	t.Run("testValidResponseErrors", func(t *testing.T) {
+		input := Response{
+			Code: 100,
+			Body: "dddddd",
+		}
+		errs := ValidationErrors{
+			ValidationError{
+				Field: "Code",
+				Err:   ErrValueOutOfValues("200,404,500"),
+			},
+		}
+		err := Validate(input)
+		if err == nil {
+			t.Errorf("validation failed, no errors: %v", err)
+		}
+		require.Equal(t, errs, err)
+	})
+}
+
+func TestValidateInvalidRuleError(t *testing.T) {
+	t.Run("testValidateInvalidRuleError", func(t *testing.T) {
+		input := Test{
+			Test: "test",
+		}
+		errs := ErrInvalidRuleFormat("ssadaafssafasf")
+		err := Validate(input)
+		if err == nil {
+			t.Errorf("validation failed, no errors: %v", err)
+		}
+		require.Equal(t, errs, err)
+	})
+}
+
+func TestValidateUnsupportedTypeError(t *testing.T) {
+	t.Run("testValidateUnsupportedTypeError", func(t *testing.T) {
+		input := Marker{
+			Mark: true,
+		}
+		errs := ErrUnsupportedType(reflect.ValueOf(true))
+		err := Validate(input)
+		if err == nil {
+			t.Errorf("validation failed, no errors: %v", err)
+		}
+		require.Equal(t, errs, err)
+	})
+}
+
+func TestValidateUnsupportedValidatorError(t *testing.T) {
+	t.Run("testValidateUnsupportedValidatorError", func(t *testing.T) {
+		input := MarketingMessage{
+			Message: "ok",
+		}
+		errs := ErrUnsupportedValidator("isFullOfMoney")
+		err := Validate(input)
+		if err == nil {
+			t.Errorf("validation failed, no errors: %v", err)
+		}
+		require.Equal(t, errs, err)
+	})
+}
+
+func TestValidateUnknownRegexpError(t *testing.T) {
+	t.Run("testValidateUnknownRegexpError", func(t *testing.T) {
+		input := UnknownMessage{
+			Text: "ok",
+		}
+		errs := ErrParsing("pattern", "][")
+		err := Validate(input)
+		if err == nil {
+			t.Errorf("validation failed, no errors: %v", err)
+		}
+		require.Equal(t, errs, err)
+	})
 }
